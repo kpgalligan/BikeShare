@@ -5,7 +5,8 @@ plugins {
     id("io.realm.kotlin")
     id("com.google.devtools.ksp")
     id("com.rickclephas.kmp.nativecoroutines")
-    id("io.github.luca992.multiplatform-swiftpackage") version "2.2.0"
+    id("co.touchlab.kmmbridge") version libs.versions.kmmBridge.get()
+    `maven-publish`
 }
 
 android {
@@ -23,10 +24,6 @@ android {
     }
     namespace = "dev.johnoreilly.bikeshare.common"
 }
-
-
-// CocoaPods requires the podspec to have a version.
-version = "1.0"
 
 kotlin {
     androidTarget()
@@ -78,15 +75,6 @@ kotlin {
     }
 }
 
-multiplatformSwiftPackage {
-    packageName("BikeShareKit")
-    swiftToolsVersion("5.9")
-    targetPlatforms {
-        iOS { v("14") }
-        macOS { v("12")}
-    }
-}
-
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "17"
 }
@@ -95,3 +83,34 @@ kotlin.sourceSets.all {
     languageSettings.optIn("kotlin.experimental.ExperimentalObjCName")
 }
 
+// KMMBridge Stuff
+val autoVersion = project.property(
+    if (project.hasProperty("AUTO_VERSION")) {
+        "AUTO_VERSION"
+    } else {
+        "LIBRARY_VERSION"
+    }
+) as String
+
+val GROUP: String by project
+group = GROUP
+version = autoVersion
+
+addGithubPackagesRepository()
+
+kmmbridge {
+    mavenPublishArtifacts()
+    spm()
+    frameworkName.set("BikeShareKit")
+}
+
+/*
+multiplatformSwiftPackage {
+    packageName("BikeShareKit")
+    swiftToolsVersion("5.9")
+    targetPlatforms {
+        iOS { v("14") }
+        macOS { v("12")}
+    }
+}
+ */
